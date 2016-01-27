@@ -2,12 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var tabname = 'test_'+1;//+(new Date().getTime());
+var storagefoldername = 'test_'+1;//+(new Date().getTime());
+var _foldername = storagefoldername;
 
 // Search the bookmarks when entering the search keyword.
 $(function() {
-  $('#search').change(function() {
-     $('#bookmarks').empty();
+  $('#go').click(function() {
+     $('#status').empty();
+     $('#status').append('<ul>');
+     _foldername = $('#folder').val();
+     if (!_foldername)
+	     _foldername = storagefoldername;
+     alert('Saving tabs in this window to '+_foldername);
+     launchSaveTabs(_foldername);
      // dumpBookmarks($('#search').val());
   });
 });
@@ -21,9 +28,15 @@ function status(msg) {
 	$('#status').append($('<li>'+msg+(arg1&&arg1.name ? arg1.name:(arg1.title?arg1.title:''))+'</li>'));
 }
 
-function launchSaveTabs() {
-	createTab(function(){
-		chrome.tabs.query({currentWindow: true}, saveTabs)
+function launchSaveTabs(foldername) {
+	if (!foldername)
+		foldername = _foldername;
+	// ugly nested anon functions because we want to create closure
+	// over foldername instead of using global _foldername
+	// This would be a lot cleaner using promises!
+	createTab(foldername, function(){
+		chrome.tabs.query({currentWindow: true}, 
+				function(tabQueryResults) { saveTabs(foldername, tabQueryResults); });
 	});
 }
 
@@ -33,8 +46,8 @@ function dumpTabs() {
 	});
 }
 
-function saveTabs(tabs) {
-	chrome.bookmarks.search({"title":tabname}, function(b) {
+function saveTabs(foldername, tabs) {
+	chrome.bookmarks.search({"title":foldername}, function(b) {
 		saveTabsToFolder(tabs, b[0]);
 	});
 }
@@ -65,15 +78,15 @@ function createBookmark(tab, folder) {
 	chrome.bookmarks.create({"parentId": folder.id, "title": tab.title, "url": tab.url});
 }
 
-function createTab(callback){
-	var newTab = {"title": tabname};
+function createTab(foldername, callback){
+	var newTab = {"title": foldername};
 	chrome.bookmarks.search(newTab, function(b) { 
 		if (b.length == 0) {
-			status('adding tab '+tabname);
-			chrome.bookmarks.create({"title": tabname}, callback);
+			status('adding tab ' + newTab.title);
+			chrome.bookmarks.create(newTab, callback);
 		} else {
 			// logBookmark(b);
-			chrome.bookmarks.removeTree(b[0].id, function() { createTab(callback)});
+			chrome.bookmarks.removeTree(b[0].id, function() { createTab(foldername, callback)});
 		}
 	});
 }
@@ -84,11 +97,12 @@ function logBookmark(b) {
 
 function dumpTabNodes(nodelist) {
 	var list = $('<ul>');
+	status('dumping ' + nodelist.length + ' tabs');
 	return nodelist.map(dumpTabNode);
 }
 
 function dumpTabNode(tab) {
-	status('tab: ' , tab);
+	// status('tab: ' , tab);
 	var anchor = $('<a>');
 	anchor.text(tab.title);
 	anchor.attr('href',tab.url);
@@ -99,5 +113,6 @@ function dumpTabNode(tab) {
 
 document.addEventListener('DOMContentLoaded', function () {
   dumpTabs();
-  launchSaveTabs();
+  // launchSaveTabs();
+  // chrome.tabs.query({currentWindow: true},function(x){);
 });

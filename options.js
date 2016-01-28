@@ -1,20 +1,34 @@
 var storagefoldername = 'test_'+1;//+(new Date().getTime());
 var _foldername = storagefoldername;
-var _rootfoldername = "Other Bookmarks"; // chrome default too
 
 // Search the bookmarks when entering the search keyword.
 $(function() {
-  $('#go').click(function() {
+  $('#save').click(function() {
      $('#status').empty();
      $('#status').append('<ul>');
-     _foldername = $('#folder').val();
-     if (!_foldername)
-	     _foldername = storagefoldername;
-     alert('Saving tabs in this window to '+_foldername);
-     launchSaveTabs(_foldername);
-     // dumpBookmarks($('#search').val());
+     status('Saving options (stub)');
+     var options = getOptionsFromScreen();
+     chrome.storage.local.set(options, function() {
+	     status("settings saved");
+     });
   });
 });
+
+function getOptionsFromScreen() {
+	rtn = {};
+	rtn.rootfolder = $('#rootfolder').val();
+	rtn.defaultfolder = $('#defaultfolder').val();
+	return rtn;
+}
+
+function putOptionsToScreen(opts) {
+	$('#rootfolder').val(opts.rootfolder);
+	$('#defaultfolder').val(opts.defaultfolder);
+}
+
+function getOptionsFromStorage(func) {
+	chrome.storage.local.get(null, func);
+}
 
 function status(msg) {
 	console.log(arguments);
@@ -70,10 +84,6 @@ function checkExists(bookmarks, tab, folder) {
 	}
 }
 
-function createRootFolder(foldername) {
-	status('create root folder (stub) '+foldername);
-}
-
 function createBookmark(tab, folder) {
 	status('saving tab', tab);
 	chrome.bookmarks.create({"parentId": folder.id, "title": tab.title, "url": tab.url});
@@ -112,24 +122,8 @@ function dumpTabNode(tab) {
 	return rtn;
 }
 
-function getOptionsFromStorage(func) {
-	chrome.storage.local.get(null, func);
-}
 document.addEventListener('DOMContentLoaded', function () {
-  dumpTabs();
-  getOptionsFromStorage(function(opts) {
-	console.log(opts);
-	if (opts.defaultfolder) {
-		storagefoldername = opts.defaultfolder;
-		_foldername = storagefoldername;
-		$('#folder').val(opts.defaultfolder);
-	}
-	if (opts.rootfolder) {
-		createRootFolder(opts.rootfolder);
-		rootfolder = opts.rootfolder;
-	}
-  });
-
+	getOptionsFromStorage(putOptionsToScreen);
   // launchSaveTabs();
   // chrome.tabs.query({currentWindow: true},function(x){);
 });

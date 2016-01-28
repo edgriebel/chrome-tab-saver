@@ -4,8 +4,10 @@
 "description": "save open tabs into folder",
 "permissions": [
 	"bookmarks",
-	"tabs"
+	"tabs",
+	"storage"
 ],
+"options_page": "options.html",
 "browser_action": {
 	"default_title": "Tab Saver",
 	"default_icon": "icon.png",

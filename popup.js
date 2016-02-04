@@ -115,8 +115,34 @@ function dumpTabNode(tab) {
 function getOptionsFromStorage(func) {
 	chrome.storage.local.get(null, func);
 }
+
+function findBookmark(name, bk) {
+	if (!bk) {
+		return null;
+	}
+	if (bk.title === name) {
+		return bk;
+	}
+	else
+		return findBookmark(bk.children);
+}
+
+function dumpCurrentFolders() {
+	chrome.bookmarks.getTree(function(b) { console.log('treebk',b);});
+	var newTab = {"title": "MDI"};
+	chrome.bookmarks.search(newTab, function(b) { 
+		b.forEach(function(bk){
+			status('found bookmark ' + bk.title);
+			console.log('bookmark found: ',bk);
+		}
+		)
+	});
+}
+
 document.addEventListener('DOMContentLoaded', function () {
+  dumpCurrentFolders();
   dumpTabs();
+ 
   getOptionsFromStorage(function(opts) {
 	console.log(opts);
 	if (opts.defaultfolder) {

@@ -1,20 +1,55 @@
 <html>
 	<head>
-	  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+	  <!-- Latest compiled and minified CSS -->
+	  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+	  <!-- Optional theme -->
+	  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css">
+
+	  <!-- Latest compiled and minified JavaScript -->
+	  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
 	  <script src="popup.js"></script>
 	</head>
 	<body style="width: 400px">
-		<div>Folder Name: <input id='folder'>
-			Overwrite: <input id='overwrite' type='checkbox'>
-			<br/><button id="go">GO!</button></div>
+		<div>
+			<form>
+				<fieldset class='form-group'>
+					<label for='folder'>Folder Name:</label>
+					<input type='text' class='form-control' id='folder'>
+				</fieldset>
+				<div class='checkbox form-group'>
+					<label for='overwrite'>
+						<input id='overwrite' type='checkbox' class='x-form-control'>
+						Overwrite
+					</label>
+				</div>
+				<fieldset class='form-group'>
+					<button id="go" class="btn btn-primary">Save Tabs</button>
+				</fieldset>
+			</form>
+		</div>
 		<hr/>
-		<h1>Current folders:</h1>
-		<div><ul id='currfolders'></ul></div>
+		<div class="card">
+			<div class="card-block">
+				<h4><a class="card-title" data-toggle="collapse" data-target="#currfolders">Current folders</a></h4>
+			</div>
+			<ul id='currfolders' class='list-group list-group-flush collapse in'></ul>
+		</div>
 		<hr/>
-	  <h1>Open Tabs in Current Window:</h1>
-	  <div id="tabs"></div>
+		<div class="card" id="tabs-div">
+			<div class="card-block">
+				<h4><a class="card-title" data-toggle="collapse" data-target="#tabs">Open Tabs in Current Window</a></h4>
+			</div>
+			<div id="tabs" class="collapse in"></div>
+		</div>
 	  <hr/>
-	  <h1>Status:</h1>
-	  <div><ul id='status'></ul></div>
+	  <div class="card">
+		  <div class="card-block">
+			  <h4><a class="card-title" data-toggle="collapse" data-target="#status">Status</a></h4>
+		  </div>
+	 	  <ul id='status' class="list-group list-group-flush collapse"></ul>
+	  </div>
 	</body>
 </html>

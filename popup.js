@@ -6,34 +6,40 @@ var _rootfoldername = "Other Bookmarks"; // chrome default too
 $(function() {
   $('#go').click(function() {
      $('#status').empty();
-     $('#status').append('<ul>');
+     // repeat? $('#status').append('<ul class="list-group list-group-flush">');
      _foldername = $('#folder').val();
      if (!_foldername)
 	     _foldername = storagefoldername;
-     alert('Saving tabs in this window to '+_foldername);
+     status('Saving tabs in this window to '+_foldername);
      launchSaveTabs(_foldername);
      // dumpBookmarks($('#search').val());
   });
 });
 
 function status(msg) {
-	console.log(arguments);
 	var arg1 = '';
 	if (arguments.length > 1) {
 		arg1 = arguments[1];
+		console.log(arguments);
 	}
-	$('#status').append($('<li>'+msg+(arg1&&arg1.name ? arg1.name:(arg1.title?arg1.title:''))+'</li>'));
+	else {
+		console.log(arguments[0]);
+	}
+	$('#status').append($('<li class="list-group-item">'+msg+(arg1&&arg1.name ? arg1.name:(arg1.title?arg1.title:''))+'</li>'));
 }
 
 function launchSaveTabs(foldername) {
-	if (!foldername)
+	status('launchSaveTabs('+foldername+')');
+	if (!foldername)		
 		foldername = _foldername;
 	// ugly nested anon functions because we want to create closure
 	// over foldername instead of using global _foldername
 	// This would be a lot cleaner using promises!
-	createTab(foldername, function(){
+	createFolder(foldername, function(){
 		chrome.tabs.query({currentWindow: true}, 
-				function(tabQueryResults) { saveTabs(foldername, tabQueryResults); });
+				function(tabQueryResults) { 
+					saveTabs(foldername, tabQueryResults); 
+				});
 	});
 }
 
@@ -50,13 +56,18 @@ function saveTabs(foldername, tabs) {
 }
 
 function saveTabsToFolder(tabs, f) {
-	status('save tabs to folder', f);
-	tabs.forEach(function(t) { findAndCreateBookmark(t, f); });
+	status('save ' + tabs.length + ' tabs to folder', f);
+	tabs.forEach(function(t) { 
+		findAndCreateBookmark(t, f); 
+	});
+	status('done saving tabs to folder');
 }
 
 function findAndCreateBookmark(tab, folder) {
-	status('looking for tab '+tab.title + ' in folder '+folder.title, tab);
-	chrome.bookmarks.search({"url": tab.url}, function(bookmarks) { checkExists(bookmarks, tab, folder) });
+	// status('looking for tab '+tab.title + ' in folder '+folder.title, tab);
+	chrome.bookmarks.search({"url": tab.url}, function(bookmarks) { 
+		checkExists(bookmarks, tab, folder); 
+	});
 }
 
 function checkExists(bookmarks, tab, folder) {
@@ -75,19 +86,21 @@ function createRootFolder(foldername) {
 }
 
 function createBookmark(tab, folder) {
-	status('saving tab', tab);
+	// status('saving tab', tab);
 	chrome.bookmarks.create({"parentId": folder.id, "title": tab.title, "url": tab.url});
 }
 
-function createTab(foldername, callback){
-	var newTab = {"title": foldername};
-	chrome.bookmarks.search(newTab, function(b) { 
+function createFolder(foldername, callback){
+	var newFolder = {"title": foldername};
+	chrome.bookmarks.search(newFolder, function(b) { 
 		if (b.length == 0) {
-			status('adding tab ' + newTab.title);
-			chrome.bookmarks.create(newTab, callback);
+			status('adding folder ' + newFolder.title);
+			chrome.bookmarks.create(newFolder, callback);
 		} else {
 			// logBookmark(b);
-			chrome.bookmarks.removeTree(b[0].id, function() { createTab(foldername, callback)});
+			chrome.bookmarks.removeTree(b[0].id, function() { 
+				createFolder(foldername, callback)
+			});
 		}
 	});
 }
@@ -97,19 +110,19 @@ function logBookmark(b) {
 }
 
 function dumpTabNodes(nodelist) {
-	var list = $('<ul>');
+	var list = $('<ul class="list-group list-group-flush">');
 	status('dumping ' + nodelist.length + ' tabs');
-	return nodelist.map(dumpTabNode);
+	return list.append(nodelist.map(dumpTabNode));
 }
 
 function dumpTabNode(tab) {
 	// status('tab: ' , tab);
-	var anchor = $('<a>');
+	var anchor = $('<li class="list-group-item"><a class="card-link"></li>');
 	anchor.text(tab.title);
 	anchor.attr('href',tab.url);
-	var rtn = $('<div>');
-	rtn.append(anchor);
-	return rtn;
+	// var rtn = $('<div>');
+	// rtn.append(anchor);
+	return anchor;
 }
 
 function getOptionsFromStorage(func) {
@@ -137,6 +150,9 @@ function dumpCurrentFolders() {
 		}
 		)
 	});
+	var x = $('<li class="list-group-item" id="f"></li>');
+	x.append('<i>&lt;example...&gt;</i>');
+	_ex = $('#currfolders').append(x)
 }
 
 document.addEventListener('DOMContentLoaded', function () {
